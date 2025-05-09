@@ -1,0 +1,7 @@
+
+State Machine - |board_specific_top|lab_top:i_lab_top|game_top:i_game_top|game_master_fsm_1_regular_state_encoded:master_fsm|state
+Name state.STATE_END state.STATE_SHOOT state.STATE_AIM state.STATE_START 
+state.STATE_START 0 0 0 0 
+state.STATE_AIM 0 0 1 1 
+state.STATE_SHOOT 0 1 0 1 
+state.STATE_END 1 0 0 1 
