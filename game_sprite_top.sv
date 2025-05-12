@@ -5,8 +5,8 @@ module game_sprite_top
     parameter SPRITE_WIDTH  = 8,
               SPRITE_HEIGHT = 8,
 
-              DX_WIDTH      = 5,  // X speed width in bits
-              DY_WIDTH      = 5,  // Y speed width in bits
+              DX_WIDTH      = 2,  // X speed width in bits
+              DY_WIDTH      = 2,  // Y speed width in bits
 
               ROW_0         = 32'h000cc000,
               ROW_1         = 32'h000cc000,

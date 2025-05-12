@@ -8,7 +8,7 @@ Info: Revision Name = fpga_project
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
-    Info: Processing started: Fri May  9 16:57:09 2025
+    Info: Processing started: Fri May  9 17:29:18 2025
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off fpga_project -c fpga_project
 Info (20032): Parallel compilation is enabled and will use up to 4 processors
 Info (12021): Found 1 design units, including 1 entities, in source file /users/danit/desktop/rt/basics-graphics-music/labs/2_graphics/2_4_game/game_master_fsm_1_regular_state_encoded.sv
@@ -193,14 +193,14 @@ Info (21057): Implemented 612 device resources after synthesis - the final resou
     Info (21060): Implemented 22 bidirectional pins
     Info (21061): Implemented 561 logic cells
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 73 warnings
-    Info: Peak virtual memory: 4806 megabytes
-    Info: Processing ended: Fri May  9 16:57:18 2025
+    Info: Peak virtual memory: 4790 megabytes
+    Info: Processing ended: Fri May  9 17:29:27 2025
     Info: Elapsed time: 00:00:09
     Info: Total CPU time (on all processors): 00:00:22
 Info: *******************************************************************
 Info: Running Quartus Prime Fitter
     Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
-    Info: Processing started: Fri May  9 16:57:18 2025
+    Info: Processing started: Fri May  9 17:29:28 2025
 Info: Command: quartus_fit --read_settings_files=off --write_settings_files=off fpga_project -c fpga_project
 Info: qfit2_default_script.tcl version: #1
 Info: Project  = fpga_project
@@ -258,7 +258,7 @@ Info (170199): The Fitter performed an Auto Fit compilation.  Optimizations were
     Info (170201): Optimizations that may affect the design's routability were skipped
     Info (170200): Optimizations that may affect the design's timing were skipped
 Info (170194): Fitter routing operations ending: elapsed time is 00:00:00
-Info (11888): Total time spent on timing analysis during the Fitter is 0.15 seconds.
+Info (11888): Total time spent on timing analysis during the Fitter is 0.14 seconds.
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
 Info (334003): Started post-fitting delay annotation
@@ -320,27 +320,27 @@ Warning (169064): Following 22 pins have no output enable or a GND or VCC output
     Info (169065): Pin LCD_D[7] has a permanently disabled output enable File: C:/Users/danit/Desktop/RT/basics-graphics-music/boards/omdazz/board_specific_top.sv Line: 79
 Info (144001): Generated suppressed messages file C:/Users/danit/Desktop/RT/basics-graphics-music/labs/2_graphics/2_4_game/run/fpga_project.fit.smsg
 Info: Quartus Prime Fitter was successful. 0 errors, 9 warnings
-    Info: Peak virtual memory: 5502 megabytes
-    Info: Processing ended: Fri May  9 16:57:23 2025
+    Info: Peak virtual memory: 5503 megabytes
+    Info: Processing ended: Fri May  9 17:29:33 2025
     Info: Elapsed time: 00:00:05
     Info: Total CPU time (on all processors): 00:00:05
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
-    Info: Processing started: Fri May  9 16:57:24 2025
+    Info: Processing started: Fri May  9 17:29:34 2025
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off fpga_project -c fpga_project
 Info (115031): Writing out detailed assembly data for power analysis
 Info (115030): Assembler is generating device programming files
 Info: Quartus Prime Assembler was successful. 0 errors, 0 warnings
     Info: Peak virtual memory: 4717 megabytes
-    Info: Processing ended: Fri May  9 16:57:25 2025
+    Info: Processing ended: Fri May  9 17:29:35 2025
     Info: Elapsed time: 00:00:01
     Info: Total CPU time (on all processors): 00:00:01
 Info (293026): Skipped module Power Analyzer due to the assignment FLOW_ENABLE_POWER_ANALYZER
 Info: *******************************************************************
 Info: Running Quartus Prime Timing Analyzer
     Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
-    Info: Processing started: Fri May  9 16:57:26 2025
+    Info: Processing started: Fri May  9 17:29:36 2025
 Info: Command: quartus_sta fpga_project -c fpga_project
 Info: qsta_default_script.tcl version: #1
 Info (20032): Parallel compilation is enabled and will use up to 4 processors
@@ -402,14 +402,14 @@ Info (332146): Worst-case minimum pulse width slack is 9.261
 Info (332101): Design is fully constrained for setup requirements
 Info (332101): Design is fully constrained for hold requirements
 Info: Quartus Prime Timing Analyzer was successful. 0 errors, 0 warnings
-    Info: Peak virtual memory: 4802 megabytes
-    Info: Processing ended: Fri May  9 16:57:28 2025
+    Info: Peak virtual memory: 4810 megabytes
+    Info: Processing ended: Fri May  9 17:29:38 2025
     Info: Elapsed time: 00:00:02
     Info: Total CPU time (on all processors): 00:00:02
 Info (293000): Quartus Prime Full Compilation was successful. 0 errors, 82 warnings
 Info (23030): Evaluation of Tcl script c:/intelfpga_lite/24.1std/quartus/common/tcl/internal/qsh_flow.tcl was successful
 Info: Quartus Prime Shell was successful. 0 errors, 82 warnings
     Info: Peak virtual memory: 4763 megabytes
-    Info: Processing ended: Fri May  9 16:57:28 2025
-    Info: Elapsed time: 00:00:20
-    Info: Total CPU time (on all processors): 00:00:38
+    Info: Processing ended: Fri May  9 17:29:38 2025
+    Info: Elapsed time: 00:00:21
+    Info: Total CPU time (on all processors): 00:00:41

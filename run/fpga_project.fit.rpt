@@ -1,5 +1,5 @@
 Fitter report for fpga_project
-Fri May  9 16:57:23 2025
+Fri May  9 17:29:33 2025
 Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
 
 
@@ -68,7 +68,7 @@ on the Quartus Prime software download page.
 +--------------------------------------------------------------------------------------+
 ; Fitter Summary                                                                       ;
 +------------------------------------+-------------------------------------------------+
-; Fitter Status                      ; Successful - Fri May  9 16:57:23 2025           ;
+; Fitter Status                      ; Successful - Fri May  9 17:29:33 2025           ;
 ; Quartus Prime Version              ; 24.1std.0 Build 1077 03/04/2025 SC Lite Edition ;
 ; Revision Name                      ; fpga_project                                    ;
 ; Top-level Entity Name              ; board_specific_top                              ;
@@ -1187,7 +1187,7 @@ Info (170199): The Fitter performed an Auto Fit compilation.  Optimizations were
     Info (170201): Optimizations that may affect the design's routability were skipped
     Info (170200): Optimizations that may affect the design's timing were skipped
 Info (170194): Fitter routing operations ending: elapsed time is 00:00:00
-Info (11888): Total time spent on timing analysis during the Fitter is 0.15 seconds.
+Info (11888): Total time spent on timing analysis during the Fitter is 0.14 seconds.
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
 Info (334003): Started post-fitting delay annotation
@@ -1249,8 +1249,8 @@ Warning (169064): Following 22 pins have no output enable or a GND or VCC output
     Info (169065): Pin LCD_D[7] has a permanently disabled output enable File: C:/Users/danit/Desktop/RT/basics-graphics-music/boards/omdazz/board_specific_top.sv Line: 79
 Info (144001): Generated suppressed messages file C:/Users/danit/Desktop/RT/basics-graphics-music/labs/2_graphics/2_4_game/run/fpga_project.fit.smsg
 Info: Quartus Prime Fitter was successful. 0 errors, 9 warnings
-    Info: Peak virtual memory: 5502 megabytes
-    Info: Processing ended: Fri May  9 16:57:23 2025
+    Info: Peak virtual memory: 5503 megabytes
+    Info: Processing ended: Fri May  9 17:29:33 2025
     Info: Elapsed time: 00:00:05
     Info: Total CPU time (on all processors): 00:00:05
 
