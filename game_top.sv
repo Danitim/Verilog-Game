@@ -62,32 +62,39 @@ module game_top
 
     //------------------------------------------------------------------------
 
+//------------------------------------------------------------------------
     always_comb
     begin
-        if (random [7])
-        begin
-            sprite_target_write_x  = 10'd0;
-            sprite_target_write_dx = 2'b01;
-        end
-        else
-        begin
-            sprite_target_write_x  = screen_width - 8;
-            sprite_target_write_dx = { 1'b1, random [6] };
-        end
+        case (random[7:6])
+            2'b00: begin  // 25% вероятность - появляется слева и летит направо и вниз
+                sprite_target_write_x  = 10'd0 + random[4:0];
+                sprite_target_write_dx = 2'b01;  // Направо
+                sprite_target_write_dy = 2'b01;   // Вниз
+            end
+            2'b01: begin  // 25% вероятность - появляется справа и летит налево и вниз
+                sprite_target_write_x  = screen_width - 8 - random[4:0];
+                sprite_target_write_dx = 2'b11;   // Налево
+                sprite_target_write_dy = 2'b01;    // Вниз
+            end
+            2'b10, 2'b11: begin  // 50% вероятность - появляется случайно по X и летит только вниз
+                sprite_target_write_x  = random[9:0] % (screen_width - 8);
+                sprite_target_write_dx = 2'b00;   // Нет горизонтального движения
+                sprite_target_write_dy = 2'b01;   // Вниз
+            end
+        endcase
     end
 
-    assign sprite_target_write_y  = screen_height / 10 + random [5:0];
-    assign sprite_target_write_dy = 1'd0;
+    assign sprite_target_write_y = screen_height/10 + random[5:0];
 
     //------------------------------------------------------------------------
 
     game_sprite_top
     #(
-        .SPRITE_WIDTH  ( 8 ),
-        .SPRITE_HEIGHT ( 8 ),
+        .SPRITE_WIDTH  ( 16 ),
+        .SPRITE_HEIGHT ( 16 ),
 
-        .DX_WIDTH      ( 2 ),
-        .DY_WIDTH      ( 1 ),
+        .DX_WIDTH      ( 4 ),
+        .DY_WIDTH      ( 4 ),
 
         .ROW_0 ( 32'h000bb000 ),
         .ROW_1 ( 32'h00099000 ),
@@ -180,12 +187,7 @@ module game_top
         2'b11: sprite_torpedo_write_dx = 2'b00;
         endcase
 
-        case (left_right_keys)
-        2'b00: sprite_torpedo_write_dy = 3'b111;
-        2'b01: sprite_torpedo_write_dy = 3'b110;
-        2'b10: sprite_torpedo_write_dy = 3'b110;
-        2'b11: sprite_torpedo_write_dy = 3'b110;
-        endcase
+        sprite_torpedo_write_dy = 3'b000;
     end
 
     //------------------------------------------------------------------------

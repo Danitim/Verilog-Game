@@ -49,10 +49,9 @@ module game_master_fsm_1_regular_state_encoded
 
     //------------------------------------------------------------------------
 
-    wire end_of_game
-        =   ~ sprite_target_within_screen
-          | ~ sprite_torpedo_within_screen
-          |   collision;
+    wire torpedo_out_of_screen = ~sprite_torpedo_within_screen;
+    wire target_out_of_screen = ~sprite_target_within_screen;
+    wire game_over = collision || torpedo_out_of_screen;
 
     //------------------------------------------------------------------------
 
@@ -92,10 +91,15 @@ module game_master_fsm_1_regular_state_encoded
         begin
             d_sprite_target_enable_update   = 1'b1;
 
-            if (end_of_game)
+            if (target_out_of_screen)
+            begin
+                // Перезапускаем цель при вылете за экран
+                d_sprite_target_write_xy  = 1'b1;
+                d_sprite_target_write_dxy  = 1'b1;
+            end
+            else if (game_over)
             begin
                 d_end_of_game_timer_start   = 1'b1;
-
                 d_state = STATE_END;
             end
             else if (launch_key)
@@ -111,26 +115,31 @@ module game_master_fsm_1_regular_state_encoded
             d_sprite_target_enable_update   = 1'b1;
             d_sprite_torpedo_enable_update  = 1'b1;
 
-            if (collision)
-                d_game_won = 1'b1;
-
-            if (end_of_game)
+            if (target_out_of_screen)
             begin
-                d_end_of_game_timer_start   = 1'b1;
-
+                // Перезапускаем цель при вылете за экран
+                d_sprite_target_write_xy  = 1'b1;
+                d_sprite_target_write_dxy  = 1'b1;
+            end
+            else if (collision)
+            begin
+                d_game_won = 1'b1;
+                d_end_of_game_timer_start = 1'b1;
+                d_state = STATE_END;
+            end
+            else if (torpedo_out_of_screen)
+            begin
+                d_end_of_game_timer_start = 1'b1;
                 d_state = STATE_END;
             end
         end
 
         STATE_END:
         begin
-            // TODO: Investigate why it needs collision detection here
-            // and not in previous state
-
             if (collision)
                 d_game_won = 1'b1;
 
-            if (! end_of_game_timer_running)
+            if (!end_of_game_timer_running)
                 d_state = STATE_START;
         end
 
