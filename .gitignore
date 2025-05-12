@@ -1,3 +1,5 @@
+# Ignore run directory and its contents
 run/
 
+# Ignore log.txt file
 log.txt
