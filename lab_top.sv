@@ -101,29 +101,19 @@ module lab_top
         end
     end
     
-    // Декодер 7-сегментного дисплея с правильной разметкой:
-    //   --a--
-    //  |     |
-    //  f     b
-    //  |     |
-    //   --g--
-    //  |     |
-    //  e     c
-    //  |     |
-    //   --d--  h
     always_comb begin
         case (bcd_digits[digit_sel])
-            4'd0: seg_data = 8'b00000011; // abcdef (0)
-            4'd1: seg_data = 8'b01100000; // bc (1)
-            4'd2: seg_data = 8'b11011010; // abged (2)
-            4'd3: seg_data = 8'b11110010; // abgcd (3)
-            4'd4: seg_data = 8'b01100110; // fgbc (4)
-            4'd5: seg_data = 8'b10110110; // afgcd (5)
-            4'd6: seg_data = 8'b10111110; // afgcde (6)
-            4'd7: seg_data = 8'b11100000; // abc (7)
-            4'd8: seg_data = 8'b11111110; // abcdefg (8)
-            4'd9: seg_data = 8'b11110110; // abcdfg (9)
-            default: seg_data = 8'b00000000; // Все сегменты выключены
+            4'd0: seg_data = 8'b00000011;
+            4'd1: seg_data = 8'b10011111;
+            4'd2: seg_data = 8'b00100101;
+            4'd3: seg_data = 8'b00001101;
+            4'd4: seg_data = 8'b10011001;
+            4'd5: seg_data = 8'b01001001;
+            4'd6: seg_data = 8'b01000001;
+            4'd7: seg_data = 8'b00011111;
+            4'd8: seg_data = 8'b00000001;
+            4'd9: seg_data = 8'b00001001;
+            default: seg_data = 8'b11111111;
         endcase
     end
     
