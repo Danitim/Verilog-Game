@@ -85,7 +85,23 @@ module game_top
 
     //------------------------------------------------------------------------
 
-    logic [3:0] speed = 4'b0001;
+    logic [3:0] speed;
+    logic [15:0] last_incremented_at;
+    
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            speed <= 4'b0001;
+            last_incremented_at <= 0;
+        end
+        else if (collision) begin
+            speed <= 4'b0001;
+            last_incremented_at <= 0;
+        end
+        else if (target_counter >= last_incremented_at + 5 && speed < 4'b0111) begin
+            speed <= speed + 1;
+            last_incremented_at <= target_counter;
+        end
+    end
 
     always_comb
     begin
@@ -179,7 +195,8 @@ module game_top
     wire  [w_x             - 1:0] sprite_torpedo_write_x;
     wire  [w_y             - 1:0] sprite_torpedo_write_y;
 
-    logic [                  1:0] sprite_torpedo_write_dx;
+    // logic [                  2:0] torpedo_speed;
+    logic [                  2:0] sprite_torpedo_write_dx;
     logic [                  2:0] sprite_torpedo_write_dy;
 
     wire                          sprite_torpedo_enable_update;
@@ -205,10 +222,10 @@ module game_top
     always_comb
     begin
         case (left_right_keys)
-        2'b00: sprite_torpedo_write_dx = 2'b00;
-        2'b01: sprite_torpedo_write_dx = 2'b01;
-        2'b10: sprite_torpedo_write_dx = 2'b11;
-        2'b11: sprite_torpedo_write_dx = 2'b00;
+        2'b00: sprite_torpedo_write_dx = 3'b000;
+        2'b01: sprite_torpedo_write_dx = 3'b010;
+        2'b10: sprite_torpedo_write_dx = 3'b110;
+        2'b11: sprite_torpedo_write_dx = 3'b000;
         endcase
 
         sprite_torpedo_write_dy = 3'b000;
@@ -221,7 +238,7 @@ module game_top
         .SPRITE_WIDTH  ( 8 ),
         .SPRITE_HEIGHT ( 8 ),
 
-        .DX_WIDTH      ( 2 ),
+        .DX_WIDTH      ( 3 ),
         .DY_WIDTH      ( 3 ),
 
         .ROW_0 ( 32'h000cc000 ),
