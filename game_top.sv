@@ -25,7 +25,9 @@ module game_top
     input  [w_x             - 1:0] x,
     input  [w_y             - 1:0] y,
 
-    output [`GAME_RGB_WIDTH - 1:0] rgb
+    output [`GAME_RGB_WIDTH - 1:0] rgb,
+    
+    output [15:0]                  target_count 
 );
 
     //------------------------------------------------------------------------
