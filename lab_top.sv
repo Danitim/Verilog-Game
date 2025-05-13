@@ -76,20 +76,18 @@ module lab_top
     assign green = { w_green { rgb [1] } };
     assign blue  = { w_blue  { rgb [0] } };
 
-    // Логика для семисегментного дисплея (десятичный вывод)
-    logic [3:0] bcd_digits [0:3];  // 4 цифры (0-9999)
-    logic [1:0] digit_sel;         // Выбор текущего разряда
-    logic [7:0] seg_data;          // Данные для сегментов (a-h)
-    
-    // Преобразование в BCD
+    // 7-segment
+    logic [3:0] bcd_digits [0:3];
+    logic [1:0] digit_sel;
+    logic [7:0] seg_data;
+
     always_comb begin
-        bcd_digits[0] = target_count % 10;          // Единицы
-        bcd_digits[1] = (target_count / 10) % 10;   // Десятки
-        bcd_digits[2] = (target_count / 100) % 10;  // Сотни
-        bcd_digits[3] = (target_count / 1000) % 10; // Тысячи
+        bcd_digits[0] = target_count % 10;
+        bcd_digits[1] = (target_count / 10) % 10;
+        bcd_digits[2] = (target_count / 100) % 10;
+        bcd_digits[3] = (target_count / 1000) % 10;
     end
     
-    // Счетчик для мультиплексирования разрядов (~1kHz)
     logic [15:0] clk_div;
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -103,24 +101,23 @@ module lab_top
     
     always_comb begin
         case (bcd_digits[digit_sel])
-            4'd0: seg_data = 8'b00000011;
-            4'd1: seg_data = 8'b10011111;
-            4'd2: seg_data = 8'b00100101;
-            4'd3: seg_data = 8'b00001101;
-            4'd4: seg_data = 8'b10011001;
-            4'd5: seg_data = 8'b01001001;
-            4'd6: seg_data = 8'b01000001;
-            4'd7: seg_data = 8'b00011111;
-            4'd8: seg_data = 8'b00000001;
-            4'd9: seg_data = 8'b00001001;
-            default: seg_data = 8'b11111111;
+            4'd0: seg_data = 8'b11111100; // abcdef (0)
+            4'd1: seg_data = 8'b01100000; // bc (1)
+            4'd2: seg_data = 8'b11011010; // abged (2)
+            4'd3: seg_data = 8'b11110010; // abgcd (3)
+            4'd4: seg_data = 8'b01100110; // fgbc (4)
+            4'd5: seg_data = 8'b10110110; // afgcd (5)
+            4'd6: seg_data = 8'b10111110; // afgcde (6)
+            4'd7: seg_data = 8'b11100000; // abc (7)
+            4'd8: seg_data = 8'b11111110; // abcdefg (8)
+            4'd9: seg_data = 8'b11110110; // abcdfg (9)
+            default: seg_data = 8'b00000000; // Все сегменты выключены
         endcase
     end
     
-    // Назначение выходов (для общего анода)
     always_comb begin
-        abcdefgh = ~seg_data; // Инвертируем для общего анода
-        digit = (8'b00000001 << digit_sel); // Активируем текущий разряд
+        abcdefgh = seg_data;
+        digit = (8'b00000001 << digit_sel);
     end
 
 endmodule

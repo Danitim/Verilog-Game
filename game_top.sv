@@ -30,6 +30,27 @@ module game_top
     output [15:0]                  target_count 
 );
 
+    logic [15:0] target_counter = 0;
+    assign target_count = target_counter;
+
+    logic prev_write_xy;
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            prev_write_xy <= 0;
+            target_counter <= 0;
+        end else begin
+            prev_write_xy <= sprite_target_write_xy;
+
+            if (collision) begin
+                target_counter <= 0;
+            end
+            
+            if (!prev_write_xy && sprite_target_write_xy) begin
+                target_counter <= target_counter + 1;
+            end
+        end
+    end
+
     //------------------------------------------------------------------------
 
     wire [15:0] random;
@@ -44,8 +65,8 @@ module game_top
     logic [w_x             - 1:0] sprite_target_write_x;
     wire  [w_y             - 1:0] sprite_target_write_y;
 
-    logic [                  1:0] sprite_target_write_dx;
-    wire                          sprite_target_write_dy;
+    logic [                  3:0] sprite_target_write_dx;
+    logic [                  3:0] sprite_target_write_dy;
 
     wire                          sprite_target_enable_update;
 
@@ -64,24 +85,25 @@ module game_top
 
     //------------------------------------------------------------------------
 
-//------------------------------------------------------------------------
+    logic [3:0] speed = 4'b0001;
+
     always_comb
     begin
         case (random[7:6])
             2'b00: begin  // 25% вероятность - появляется слева и летит направо и вниз
                 sprite_target_write_x  = 10'd0 + random[4:0];
-                sprite_target_write_dx = 2'b01;  // Направо
-                sprite_target_write_dy = 2'b01;   // Вниз
+                sprite_target_write_dx = speed;
+                sprite_target_write_dy = speed;
             end
             2'b01: begin  // 25% вероятность - появляется справа и летит налево и вниз
-                sprite_target_write_x  = screen_width - 8 - random[4:0];
-                sprite_target_write_dx = 2'b11;   // Налево
-                sprite_target_write_dy = 2'b01;    // Вниз
+                sprite_target_write_x  = screen_width - 16 - random[4:0];
+                sprite_target_write_dx = - speed;
+                sprite_target_write_dy =   speed;
             end
             2'b10, 2'b11: begin  // 50% вероятность - появляется случайно по X и летит только вниз
                 sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = 2'b00;   // Нет горизонтального движения
-                sprite_target_write_dy = 2'b01;   // Вниз
+                sprite_target_write_dx = 4'b0000;
+                sprite_target_write_dy = speed;
             end
         endcase
     end
