@@ -107,12 +107,12 @@ module game_top
     begin
         case (random[7:6])
             2'b00: begin  // 25% вероятность - появляется слева и летит направо и вниз
-                sprite_target_write_x  = 10'd0 + random[4:0];
+                sprite_target_write_x  = 10'd0 + random[3:0] * 8;
                 sprite_target_write_dx = speed;
                 sprite_target_write_dy = speed;
             end
             2'b01: begin  // 25% вероятность - появляется справа и летит налево и вниз
-                sprite_target_write_x  = screen_width - 16 - random[4:0];
+                sprite_target_write_x  = screen_width - 16 - random[3:0] * 8;
                 sprite_target_write_dx = - speed;
                 sprite_target_write_dy =   speed;
             end
@@ -130,8 +130,8 @@ module game_top
 
     game_sprite_top
     #(
-        .SPRITE_WIDTH  ( 16 ),
-        .SPRITE_HEIGHT ( 16 ),
+        .SPRITE_WIDTH  ( 32 ),
+        .SPRITE_HEIGHT ( 32 ),
 
         .DX_WIDTH      ( 4 ),
         .DY_WIDTH      ( 4 ),
