@@ -103,22 +103,28 @@ module game_top
         end
     end
 
+    // В разделе с always_comb для sprite_target
     always_comb
     begin
         case (random[7:6])
-            2'b00: begin  // 25% вероятность - появляется слева и летит направо и вниз
+            2'b00: begin  // 25% - слева, направо и вниз
                 sprite_target_write_x  = 10'd0 + random[3:0] * 8;
                 sprite_target_write_dx = speed;
                 sprite_target_write_dy = speed;
             end
-            2'b01: begin  // 25% вероятность - появляется справа и летит налево и вниз
+            2'b01: begin  // 25% - справа, налево и вниз
                 sprite_target_write_x  = screen_width - 16 - random[3:0] * 8;
-                sprite_target_write_dx = - speed;
-                sprite_target_write_dy =   speed;
+                sprite_target_write_dx = -speed; // Используем 4-битное дополнение до двух
+                sprite_target_write_dy = speed;
             end
-            2'b10, 2'b11: begin  // 50% вероятность - появляется случайно по X и летит только вниз
+            2'b10: begin  // 25% - случайно по X, вверх
                 sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = 4'b0000;
+                sprite_target_write_dx = 4'b0001;
+                sprite_target_write_dy = -speed; // Отрицательная скорость для движения вверх
+            end
+            2'b11: begin  // 25% - случайно по X, вниз
+                sprite_target_write_x  = random[9:0] % (screen_width - 8);
+                sprite_target_write_dx = 4'b1110;
                 sprite_target_write_dy = speed;
             end
         endcase
@@ -217,7 +223,7 @@ module game_top
     //------------------------------------------------------------------------
 
     assign sprite_torpedo_write_x  = screen_width / 2 + random [15:10];
-    assign sprite_torpedo_write_y  = screen_height - 16;
+    assign sprite_torpedo_write_y  = screen_height - 64;
 
     always_comb
     begin

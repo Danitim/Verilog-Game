@@ -2,109 +2,112 @@
 
 module game_sprite_control
 #(
-    parameter SPRITE_WIDTH  = 8,
-              SPRITE_HEIGHT = 8,
-              DX_WIDTH      = 2,  // X speed width in bits
-              DY_WIDTH      = 2,  // Y speed width in bits
+    parameter SPRITE_WIDTH   = 8,   // sprite width in pixels
+              SPRITE_HEIGHT  = 8,   // sprite height in pixels
 
-              screen_width  = 640,
-              screen_height = 480,
+              DX_WIDTH       = 2,   // signed horizontal speed width
+              DY_WIDTH       = 2,   // signed vertical speed width
 
-              w_x           = $clog2 ( screen_width  ),
-              w_y           = $clog2 ( screen_height ),
+              screen_width   = 640,
+              screen_height  = 480,
 
-              strobe_to_update_xy_counter_width = 20
+              w_x            = $clog2(screen_width),   // coordinate bit‑widths
+              w_y            = $clog2(screen_height),
+
+              strobe_to_update_xy_counter_width = 20    // movement slow‑down
 )
-
-//----------------------------------------------------------------------------
-
 (
-    input                    clk,
-    input                    rst,
+    input  logic                       clk,
+    input  logic                       rst,
 
-    input                    sprite_write_xy,
-    input                    sprite_write_dxy,
+    // control signals
+    input  logic                       sprite_enable_update,
+    input  logic                       sprite_write_xy,
+    input  logic                       sprite_write_dxy,
 
-    input  [w_x       - 1:0] sprite_write_x,
-    input  [w_y       - 1:0] sprite_write_y,
+    // write ports (external CPU)
+    input  logic [w_x-1:0]             sprite_write_x,
+    input  logic [w_y-1:0]             sprite_write_y,
+    input  logic signed [DX_WIDTH-1:0] sprite_write_dx,
+    input  logic signed [DY_WIDTH-1:0] sprite_write_dy,
 
-    input  [ DX_WIDTH - 1:0] sprite_write_dx,
-    input  [ DY_WIDTH - 1:0] sprite_write_dy,
-
-    input                    sprite_enable_update,
-
-    output [w_x       - 1:0] sprite_x,
-    output [w_y       - 1:0] sprite_y
+    // read ports (to renderer)
+    output logic [w_x-1:0]             sprite_x,
+    output logic [w_y-1:0]             sprite_y
 );
 
+    //--------------------------------------------------------------------
+    //  Generate a slow strobe so sprites move visibly on screen
+    //--------------------------------------------------------------------
     wire strobe_to_update_xy;
 
-    game_strobe
-    # (.width (strobe_to_update_xy_counter_width))
-    strobe_generator
-    (clk, rst, strobe_to_update_xy);
+    game_strobe #(
+        .width ( strobe_to_update_xy_counter_width )
+    ) strobe_generator (
+        .clk   ( clk  ),
+        .rst   ( rst  ),
+        .strobe( strobe_to_update_xy )
+    );
 
-    logic [w_x       - 1:0] x;
-    logic [w_y       - 1:0] y;
+    logic [w_x-1:0]             x;
+    logic [w_y-1:0]             y;
+    logic signed [DX_WIDTH-1:0] dx;
+    logic signed [DY_WIDTH-1:0] dy;
 
-    logic [ DX_WIDTH - 1:0] dx;
-    logic [ DY_WIDTH - 1:0] dy;
+    logic signed [w_x:0] next_x_s;
+    logic signed [w_y:0] next_y_s;
 
-    always_ff @ (posedge clk or posedge rst) begin
+    assign next_x_s = $signed({1'b0, x}) +
+                      $signed({{(w_x-DX_WIDTH+1){dx[DX_WIDTH-1]}}, dx});
+    assign next_y_s = $signed({1'b0, y}) +
+                      $signed({{(w_y-DY_WIDTH+1){dy[DY_WIDTH-1]}}, dy});
+
+
+    wire hit_left   = next_x_s < 0;
+    wire hit_right  = next_x_s > screen_width  - SPRITE_WIDTH;
+    wire hit_top    = next_y_s < 0;
+    wire hit_bottom = next_y_s > screen_height - SPRITE_HEIGHT;
+
+    always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            x  <= 0;
-            y  <= 0;
-            dx <= 0;
-            dy <= 0;
-        end else begin
-            // Приоритет 1: Запись новых координат
-            if (sprite_write_xy) begin
-                x <= sprite_write_x;
-                y <= sprite_write_y;
-            end
-            // Приоритет 2: Запись новых скоростей
-            if (sprite_write_dxy) begin
-                dx <= sprite_write_dx;
-                dy <= sprite_write_dy;
-            end
-            // Приоритет 3: Обновление позиции с проверкой столкновений
-            if (sprite_enable_update && strobe_to_update_xy && !sprite_write_xy && !sprite_write_dxy) begin
-                logic [w_x-1:0] x_new;
-                logic [w_y-1:0] y_new;
-                logic [DX_WIDTH-1:0] dx_new;
-                logic [DY_WIDTH-1:0] dy_new;
+            x <= 0;
+            y <= 0;
+        end
+        else if (sprite_write_xy) begin
+            x <= sprite_write_x;
+            y <= sprite_write_y;
+        end
+        else if (sprite_enable_update && strobe_to_update_xy) begin
+            // Horizontal
+            if (hit_left)
+                x <= 0;
+            else if (hit_right)
+                x <= screen_width - SPRITE_WIDTH;
+            else
+                x <= next_x_s[w_x-1:0];
 
-                // Вычисление новых координат
-                x_new = x + { { w_x - DX_WIDTH { dx[DX_WIDTH-1] } }, dx };
-                y_new = y + { { w_y - DY_WIDTH { dy[DY_WIDTH-1] } }, dy };
+            // Vertical
+            if (hit_top)
+                y <= 0;
+            else if (hit_bottom)
+                y <= screen_height - SPRITE_HEIGHT;
+            else
+                y <= next_y_s[w_y-1:0];
+        end
+    end
 
-                dx_new = dx;
-                dy_new = dy;
-
-                // Проверка столкновений по X
-                if (x_new < 0) begin
-                    dx_new = ~dx + 1; // Инверсия знака (дополнение до двух)
-                    x_new = 0;
-                end else if (x_new + SPRITE_WIDTH >= screen_width) begin
-                    dx_new = ~dx + 1;
-                    x_new = screen_width - SPRITE_WIDTH;
-                end
-
-                // Проверка столкновений по Y
-                if (y_new < 0) begin
-                    dy_new = ~dy + 1;
-                    y_new = 0;
-                end else if (y_new + SPRITE_HEIGHT >= screen_height) begin
-                    dy_new = ~dy + 1;
-                    y_new = screen_height - SPRITE_HEIGHT;
-                end
-
-                // Обновление регистров
-                x <= x_new;
-                y <= y_new;
-                dx <= dx_new;
-                dy <= dy_new;
-            end
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            dx <= '0;
+            dy <= '0;
+        end
+        else if (sprite_write_dxy) begin
+            dx <= sprite_write_dx;
+            dy <= sprite_write_dy;
+        end
+        else if (sprite_enable_update && strobe_to_update_xy) begin
+            if (hit_left  || hit_right ) dx <= -dx;
+            if (hit_top   || hit_bottom) dy <= -dy;
         end
     end
 
