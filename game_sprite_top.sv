@@ -62,6 +62,8 @@ module game_sprite_top
 
     game_sprite_control
     #(
+        .SPRITE_WIDTH          ( SPRITE_WIDTH          ),
+        .SPRITE_HEIGHT         ( SPRITE_HEIGHT         ),
         .DX_WIDTH              ( DX_WIDTH              ),
         .DY_WIDTH              ( DY_WIDTH              ),
 
