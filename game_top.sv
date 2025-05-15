@@ -19,6 +19,7 @@ module game_top
 
     input                          launch_key,
     input  [                  1:0] left_right_keys,
+    input  [                  1:0] down_up_keys,
 
     input                          display_on,
 
@@ -32,22 +33,21 @@ module game_top
 
     wire target_hit_wall;
 
-    logic [15:0] target_counter = 0;
+     logic [15:0] target_counter = 0;
     assign target_count = target_counter;
 
-    logic prev_write_xy;
+    logic prev_target_hit_wall; // Новая переменная для отслеживания фронта
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            prev_write_xy <= 0;
             target_counter <= 0;
+            prev_target_hit_wall <= 0;
         end else begin
-            prev_write_xy <= sprite_target_write_xy;
+            prev_target_hit_wall <= target_hit_wall;
 
             if (collision) begin
                 target_counter <= 0;
-            end
-            
-            if (!prev_write_xy && sprite_target_write_xy) begin
+            end else if (!prev_target_hit_wall && target_hit_wall) begin
                 target_counter <= target_counter + 1;
             end
         end
@@ -237,7 +237,12 @@ module game_top
         2'b11: sprite_torpedo_write_dx = 3'b000;
         endcase
 
-        sprite_torpedo_write_dy = 3'b000;
+        case (down_up_keys)
+        2'b00: sprite_torpedo_write_dy = 3'b000;
+        2'b01: sprite_torpedo_write_dy = 3'b110;
+        2'b10: sprite_torpedo_write_dy = 3'b010;
+        2'b11: sprite_torpedo_write_dy = 3'b000;
+        endcase
     end
 
     //------------------------------------------------------------------------

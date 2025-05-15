@@ -65,6 +65,7 @@ module lab_top
         .rst              (   rst                ),
         .launch_key      ( | key                ),
         .left_right_keys  ( { key [1], key [0] } ),
+        .down_up_keys     ( { key [3], key [2] } ),
         .display_on       (   display_on         ),
         .x                (   x                  ),
         .y                (   y                  ),
