@@ -30,6 +30,8 @@ module game_top
     output [15:0]                  target_count 
 );
 
+    wire target_hit_wall;
+
     logic [15:0] target_counter = 0;
     assign target_count = target_counter;
 
@@ -190,7 +192,8 @@ module game_top
         .sprite_out_bottom     ( sprite_target_out_bottom     ),
 
         .rgb_en                ( sprite_target_rgb_en         ),
-        .rgb                   ( sprite_target_rgb            )
+        .rgb                   ( sprite_target_rgb            ),
+        .hit_wall              ( target_hit_wall              )
     );
 
     //------------------------------------------------------------------------

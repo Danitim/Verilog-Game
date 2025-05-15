@@ -57,7 +57,8 @@ module game_sprite_top
     output [w_y             - 1:0] sprite_out_bottom,
 
     output                         rgb_en,
-    output [`GAME_RGB_WIDTH - 1:0] rgb
+    output [`GAME_RGB_WIDTH - 1:0] rgb,
+    output                         hit_wall
 );
 
     game_sprite_control
@@ -93,7 +94,8 @@ module game_sprite_top
         .sprite_enable_update  ( sprite_enable_update  ),
 
         .sprite_x              ( sprite_x              ),
-        .sprite_y              ( sprite_y              )
+        .sprite_y              ( sprite_y              ),
+        .hit_wall              ( hit_wall              )
     );
 
     `GAME_SPRITE_DISPLAY_MODULE

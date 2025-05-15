@@ -33,7 +33,8 @@ module game_sprite_control
 
     // read ports (to renderer)
     output logic [w_x-1:0]             sprite_x,
-    output logic [w_y-1:0]             sprite_y
+    output logic [w_y-1:0]             sprite_y,
+    output logic                       hit_wall
 );
 
     //--------------------------------------------------------------------
@@ -67,6 +68,8 @@ module game_sprite_control
     wire hit_right  = next_x_s > screen_width  - SPRITE_WIDTH;
     wire hit_top    = next_y_s < 0;
     wire hit_bottom = next_y_s > screen_height - SPRITE_HEIGHT;
+
+    assign hit_wall = (hit_left || hit_right || hit_top || hit_bottom);
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
