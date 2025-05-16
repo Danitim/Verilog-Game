@@ -26,6 +26,7 @@ module game_sprite_display
 (
     input                                clk,
     input                                rst,
+    input                                enable,
 
     input        [w_x             - 1:0] pixel_x,
     input        [w_y             - 1:0] pixel_y,
@@ -140,7 +141,7 @@ module game_sprite_display
     always_ff @ (posedge clk or posedge rst)
         if (rst)
             rgb_en <= 1'b0;
-        else if (x_hit && y_hit)
+        else if (enable && x_hit && y_hit)
             { rgb_en, rgb } <= ergb;
         else
             rgb_en <= 1'b0;

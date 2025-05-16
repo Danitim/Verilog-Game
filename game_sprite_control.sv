@@ -19,6 +19,7 @@ module game_sprite_control
 (
     input  logic                       clk,
     input  logic                       rst,
+    input  logic                       enable,
 
     // control signals
     input  logic                       sprite_enable_update,
@@ -80,7 +81,7 @@ module game_sprite_control
             x <= sprite_write_x;
             y <= sprite_write_y;
         end
-        else if (sprite_enable_update && strobe_to_update_xy) begin
+        else if (enable && sprite_enable_update && strobe_to_update_xy) begin
             // Horizontal
             if (hit_left)
                 x <= 0;
@@ -101,6 +102,10 @@ module game_sprite_control
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
+            dx <= '0;
+            dy <= '0;
+        end
+        else if (!enable) begin
             dx <= '0;
             dy <= '0;
         end

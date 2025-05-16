@@ -88,7 +88,7 @@ module game_top
     //------------------------------------------------------------------------
 
     logic [3:0] speed;
-    logic [2:0] hit_counter; // Новый счетчик ударов о стену
+    logic [2:0] hit_counter;
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -100,7 +100,7 @@ module game_top
             hit_counter <= 0;
         end
         else if (!prev_target_hit_wall && target_hit_wall) begin
-            if (hit_counter == 4) begin // После 5 ударов (0-4)
+            if (hit_counter == 4) begin
                 speed <= (speed < 4'b1111) ? speed + 1 : speed;
                 hit_counter <= 0;
             end
@@ -110,7 +110,6 @@ module game_top
         end
     end
 
-    // В разделе с always_comb для sprite_target
     always_comb
     begin
         case (random[7:6])
@@ -121,23 +120,25 @@ module game_top
             end
             2'b01: begin  // 25% - справа, налево и вниз
                 sprite_target_write_x  = screen_width - 16 - random[3:0] * 8;
-                sprite_target_write_dx = -speed; // Используем 4-битное дополнение до двух
+                sprite_target_write_dx = -speed;
                 sprite_target_write_dy = speed;
             end
             2'b10: begin  // 25% - случайно по X, вверх
                 sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = 4'b0001;
-                sprite_target_write_dy = -speed; // Отрицательная скорость для движения вверх
+                sprite_target_write_dx = speed;
+                sprite_target_write_dy = -speed;
             end
             2'b11: begin  // 25% - случайно по X, вниз
                 sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = 4'b1110;
+                sprite_target_write_dx = -speed;
                 sprite_target_write_dy = speed;
             end
         endcase
     end
 
     assign sprite_target_write_y = screen_height/10 + random[5:0];
+
+    logic target_enable = 1'b0;
 
     //------------------------------------------------------------------------
 
@@ -171,6 +172,7 @@ module game_top
     (
         .clk                   ( clk                          ),
         .rst                   ( rst                          ),
+        .enable                ( target_enable                ),
 
         .pixel_x               ( x                            ),
         .pixel_y               ( y                            ),
@@ -282,6 +284,7 @@ module game_top
     (
         .clk                   ( clk                           ),
         .rst                   ( rst                           ),
+        .enable                ( 1'b1                          ),
 
         .pixel_x               ( x                             ),
         .pixel_y               ( y                             ),
@@ -324,6 +327,7 @@ module game_top
     (
         .clk       ( clk                        ),
         .rst       ( rst                        ),
+        .target_enable ( target_enable ),
 
         .left_1    ( sprite_target_out_left     ),
         .right_1   ( sprite_target_out_right    ),
