@@ -88,20 +88,25 @@ module game_top
     //------------------------------------------------------------------------
 
     logic [3:0] speed;
-    logic [15:0] last_incremented_at;
-    
+    logic [2:0] hit_counter; // Новый счетчик ударов о стену
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             speed <= 4'b0001;
-            last_incremented_at <= 0;
+            hit_counter <= 0;
         end
         else if (collision) begin
             speed <= 4'b0001;
-            last_incremented_at <= 0;
+            hit_counter <= 0;
         end
-        else if (target_counter >= last_incremented_at + 5 && speed < 4'b0111) begin
-            speed <= speed + 1;
-            last_incremented_at <= target_counter;
+        else if (!prev_target_hit_wall && target_hit_wall) begin
+            if (hit_counter == 4) begin // После 5 ударов (0-4)
+                speed <= (speed < 4'b1111) ? speed + 1 : speed;
+                hit_counter <= 0;
+            end
+            else begin
+                hit_counter <= hit_counter + 1;
+            end
         end
     end
 
