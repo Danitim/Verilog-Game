@@ -152,6 +152,23 @@ module game_top
     //------------------------------------------------------------------------
 
     logic [`N_TARGETS-1:0] target_enable = '1;
+    wire [`N_TARGETS-1:0] target_collide_x;
+    wire [`N_TARGETS-1:0] target_collide_y;
+
+    game_target_collisions #(
+        .N_TARGETS(`N_TARGETS),
+        .w_x(w_x),
+        .w_y(w_y)
+    ) target_collisions_inst (
+        .clk(clk),
+        .rst(rst),
+        .sprite_left(sprite_target_out_left),
+        .sprite_right(sprite_target_out_right),
+        .sprite_top(sprite_target_out_top),
+        .sprite_bottom(sprite_target_out_bottom),
+        .collide_x(target_collide_x),
+        .collide_y(target_collide_y)
+    );
 
     generate
         genvar i;
@@ -194,6 +211,8 @@ module game_top
                 .sprite_out_bottom(sprite_target_out_bottom[i]),
                 .rgb_en(sprite_target_rgb_en[i]),
                 .rgb(sprite_target_rgb[i]),
+                .collide_x(target_collide_x[i]),
+                .collide_y(target_collide_y[i]),
                 .hit_wall(target_hit_wall[i])
             );
         end

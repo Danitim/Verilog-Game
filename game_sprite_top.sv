@@ -47,6 +47,9 @@ module game_sprite_top
 
     input                          sprite_enable_update,
 
+    input                          collide_x,
+    input                          collide_y,
+
     output [w_x             - 1:0] sprite_x,
     output [w_y             - 1:0] sprite_y,
 
@@ -94,6 +97,9 @@ module game_sprite_top
         .sprite_write_dy       ( sprite_write_dy       ),
 
         .sprite_enable_update  ( sprite_enable_update  ),
+
+        .collide_x             ( collide_x             ),
+        .collide_y             ( collide_y             ),
 
         .sprite_x              ( sprite_x              ),
         .sprite_y              ( sprite_y              ),

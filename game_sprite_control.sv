@@ -32,6 +32,9 @@ module game_sprite_control
     input  logic signed [DX_WIDTH-1:0] sprite_write_dx,
     input  logic signed [DY_WIDTH-1:0] sprite_write_dy,
 
+    input  logic                       collide_x,
+    input  logic                       collide_y,
+
     // read ports (to renderer)
     output logic [w_x-1:0]             sprite_x,
     output logic [w_y-1:0]             sprite_y,
@@ -100,6 +103,18 @@ module game_sprite_control
         end
     end
 
+    logic prev_collide_x, prev_collide_y;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            prev_collide_x <= 0;
+            prev_collide_y <= 0;
+        end else begin
+            prev_collide_x <= collide_x;
+            prev_collide_y <= collide_y;
+        end
+    end
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             dx <= '0;
@@ -114,8 +129,10 @@ module game_sprite_control
             dy <= sprite_write_dy;
         end
         else if (sprite_enable_update && strobe_to_update_xy) begin
-            if (hit_left  || hit_right ) dx <= -dx;
-            if (hit_top   || hit_bottom) dy <= -dy;
+            if ((hit_left || hit_right) && !prev_collide_x) dx <= -dx;
+            if ((hit_top  || hit_bottom) && !prev_collide_y) dy <= -dy;
+            if (collide_x && !prev_collide_x) dx <= -dx;
+            if (collide_y && !prev_collide_y) dy <= -dy;
         end
     end
 
