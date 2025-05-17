@@ -5,7 +5,7 @@
 
 `define GAME_RGB_WIDTH       3
 
-`define N_TARGETS 3
+`define N_TARGETS 5
 
 `ifndef GAME_MASTER_FSM_MODULE
 

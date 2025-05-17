@@ -31,12 +31,12 @@ module game_top
     output [15:0]                  target_count 
 );
 
-    wire target_hit_wall;
+    wire [`N_TARGETS-1:0] target_hit_wall;
 
-     logic [15:0] target_counter = 0;
+    logic [15:0] target_counter = 0;
     assign target_count = target_counter;
 
-    logic prev_target_hit_wall; // Новая переменная для отслеживания фронта
+    logic [`N_TARGETS-1:0] prev_target_hit_wall;
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -47,8 +47,12 @@ module game_top
 
             if (collision) begin
                 target_counter <= 0;
-            end else if (!prev_target_hit_wall && target_hit_wall) begin
-                target_counter <= target_counter + 1;
+            end else begin
+                for (int i = 0; i < `N_TARGETS; i++) begin
+                    if (!prev_target_hit_wall[i] && target_hit_wall[i]) begin
+                        target_counter <= target_counter + 1;
+                    end
+                end
             end
         end
     end
@@ -61,29 +65,29 @@ module game_top
 
     //------------------------------------------------------------------------
 
-    wire                          sprite_target_write_xy;
-    wire                          sprite_target_write_dxy;
+    wire [`N_TARGETS-1:0]                sprite_target_write_xy;
+    wire [`N_TARGETS-1:0]                sprite_target_write_dxy;
 
-    logic [w_x             - 1:0] sprite_target_write_x;
-    wire  [w_y             - 1:0] sprite_target_write_y;
+    logic [`N_TARGETS-1:0][w_x - 1:0]    sprite_target_write_x;
+    wire [`N_TARGETS-1:0][w_y - 1:0]     sprite_target_write_y;
 
-    logic [                  3:0] sprite_target_write_dx;
-    logic [                  3:0] sprite_target_write_dy;
+    logic [`N_TARGETS-1:0][3:0]          sprite_target_write_dx;
+    logic [`N_TARGETS-1:0][3:0]          sprite_target_write_dy;
 
-    wire                          sprite_target_enable_update;
+    wire [`N_TARGETS-1:0]                sprite_target_enable_update;
 
-    wire  [w_x             - 1:0] sprite_target_x;
-    wire  [w_y             - 1:0] sprite_target_y;
+    wire [`N_TARGETS-1:0][w_x - 1:0]     sprite_target_x;
+    wire [`N_TARGETS-1:0][w_y - 1:0]     sprite_target_y;
 
-    wire                          sprite_target_within_screen;
+    wire [`N_TARGETS-1:0]                sprite_target_within_screen;
 
-    wire  [w_x             - 1:0] sprite_target_out_left;
-    wire  [w_x             - 1:0] sprite_target_out_right;
-    wire  [w_y             - 1:0] sprite_target_out_top;
-    wire  [w_y             - 1:0] sprite_target_out_bottom;
+    wire [`N_TARGETS-1:0][w_x - 1:0]     sprite_target_out_left;
+    wire [`N_TARGETS-1:0][w_x - 1:0]     sprite_target_out_right;
+    wire [`N_TARGETS-1:0][w_y - 1:0]     sprite_target_out_top;
+    wire [`N_TARGETS-1:0][w_y - 1:0]     sprite_target_out_bottom;
 
-    wire                          sprite_target_rgb_en;
-    wire  [`GAME_RGB_WIDTH - 1:0] sprite_target_rgb;
+    wire [`N_TARGETS-1:0]                sprite_target_rgb_en;
+    wire [`N_TARGETS-1:0][`GAME_RGB_WIDTH - 1:0] sprite_target_rgb;
 
     //------------------------------------------------------------------------
 
@@ -99,109 +103,101 @@ module game_top
             speed <= 4'b0001;
             hit_counter <= 0;
         end
-        else if (!prev_target_hit_wall && target_hit_wall) begin
-            if (hit_counter == 4) begin
-                speed <= (speed < 4'b1111) ? speed + 1 : speed;
-                hit_counter <= 0;
-            end
-            else begin
-                hit_counter <= hit_counter + 1;
+        else begin
+            for (int i = 0; i < `N_TARGETS; i++) begin
+                if (!prev_target_hit_wall[i] && target_hit_wall[i]) begin
+                    if (hit_counter == 4) begin
+                        speed <= (speed < 4'b1111) ? speed + 1 : speed;
+                        hit_counter <= 0;
+                    end
+                    else begin
+                        hit_counter <= hit_counter + 1;
+                    end
+                end
             end
         end
     end
 
-    always_comb
-    begin
-        case (random[7:6])
-            2'b00: begin  // 25% - слева, направо и вниз
-                sprite_target_write_x  = 10'd0 + random[3:0] * 8;
-                sprite_target_write_dx = speed;
-                sprite_target_write_dy = speed;
-            end
-            2'b01: begin  // 25% - справа, налево и вниз
-                sprite_target_write_x  = screen_width - 16 - random[3:0] * 8;
-                sprite_target_write_dx = -speed;
-                sprite_target_write_dy = speed;
-            end
-            2'b10: begin  // 25% - случайно по X, вверх
-                sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = speed;
-                sprite_target_write_dy = -speed;
-            end
-            2'b11: begin  // 25% - случайно по X, вниз
-                sprite_target_write_x  = random[9:0] % (screen_width - 8);
-                sprite_target_write_dx = -speed;
-                sprite_target_write_dy = speed;
-            end
-        endcase
+    always_comb begin
+        for (int i = 0; i < `N_TARGETS; i++) begin
+            logic [15:0] rand_part;
+            rand_part = random ^ (i * 16'h5555);
+            
+            case (rand_part[1:0])
+                2'b00: begin
+                    sprite_target_write_x[i] = 10'd0 + rand_part[3:0] * 8;
+                    sprite_target_write_dx[i] = speed;
+                    sprite_target_write_dy[i] = speed;
+                end
+                2'b01: begin
+                    sprite_target_write_x[i] = screen_width - 16 - rand_part[7:4] * 8;
+                    sprite_target_write_dx[i] = -speed;
+                    sprite_target_write_dy[i] = speed;
+                end
+                2'b10: begin
+                    sprite_target_write_x[i] = rand_part[11:8] % (screen_width - 8);
+                    sprite_target_write_dx[i] = speed;
+                    sprite_target_write_dy[i] = -speed;
+                end
+                2'b11: begin
+                    sprite_target_write_x[i] = rand_part[15:12] % (screen_width - 8);
+                    sprite_target_write_dx[i] = -speed;
+                    sprite_target_write_dy[i] = speed;
+                end
+            endcase
+            sprite_target_write_y[i] = screen_height/10 + rand_part[5:0];
+        end
     end
-
-    assign sprite_target_write_y = screen_height/10 + random[5:0];
-
-    logic target_enable = 1'b0;
 
     //------------------------------------------------------------------------
 
-    game_sprite_top
-    #(
-        .SPRITE_WIDTH  ( 32 ),
-        .SPRITE_HEIGHT ( 32 ),
+    logic [`N_TARGETS-1:0] target_enable = '1;
 
-        .DX_WIDTH      ( 4 ),
-        .DY_WIDTH      ( 4 ),
-
-        .ROW_0 ( 32'h000bb000 ),
-        .ROW_1 ( 32'h00099000 ),
-        .ROW_2 ( 32'h00099000 ),
-        .ROW_3 ( 32'hb99ff99b ),
-        .ROW_4 ( 32'hb99ff99b ),
-        .ROW_5 ( 32'h00099000 ),
-        .ROW_6 ( 32'h00099000 ),
-        .ROW_7 ( 32'h000bb000 ),
-
-        .screen_width
-        (screen_width),
-
-        .screen_height
-        (screen_height),
-
-        .strobe_to_update_xy_counter_width
-        (strobe_to_update_xy_counter_width)
-    )
-    sprite_target
-    (
-        .clk                   ( clk                          ),
-        .rst                   ( rst                          ),
-        .enable                ( target_enable                ),
-
-        .pixel_x               ( x                            ),
-        .pixel_y               ( y                            ),
-
-        .sprite_write_xy       ( sprite_target_write_xy       ),
-        .sprite_write_dxy      ( sprite_target_write_dxy      ),
-
-        .sprite_write_x        ( sprite_target_write_x        ),
-        .sprite_write_y        ( sprite_target_write_y        ),
-
-        .sprite_write_dx       ( sprite_target_write_dx       ),
-        .sprite_write_dy       ( sprite_target_write_dy       ),
-
-        .sprite_enable_update  ( sprite_target_enable_update  ),
-
-        .sprite_x              ( sprite_target_x              ),
-        .sprite_y              ( sprite_target_y              ),
-
-        .sprite_within_screen  ( sprite_target_within_screen  ),
-
-        .sprite_out_left       ( sprite_target_out_left       ),
-        .sprite_out_right      ( sprite_target_out_right      ),
-        .sprite_out_top        ( sprite_target_out_top        ),
-        .sprite_out_bottom     ( sprite_target_out_bottom     ),
-
-        .rgb_en                ( sprite_target_rgb_en         ),
-        .rgb                   ( sprite_target_rgb            ),
-        .hit_wall              ( target_hit_wall              )
-    );
+    generate
+        genvar i;
+        for (i = 0; i < `N_TARGETS; i++) begin : target_gen
+            game_sprite_top #(
+                .SPRITE_WIDTH  ( 32 ),
+                .SPRITE_HEIGHT ( 32 ),
+                .DX_WIDTH      ( 4 ),
+                .DY_WIDTH      ( 4 ),
+                .ROW_0 ( 32'h000bb000 ),
+                .ROW_1 ( 32'h00099000 ),
+                .ROW_2 ( 32'h00099000 ),
+                .ROW_3 ( 32'hb99ff99b ),
+                .ROW_4 ( 32'hb99ff99b ),
+                .ROW_5 ( 32'h00099000 ),
+                .ROW_6 ( 32'h00099000 ),
+                .ROW_7 ( 32'h000bb000 ),
+                .screen_width(screen_width),
+                .screen_height(screen_height),
+                .strobe_to_update_xy_counter_width(strobe_to_update_xy_counter_width)
+            ) sprite_target (
+                .clk(clk),
+                .rst(rst),
+                .enable(target_enable[i]),
+                .pixel_x(x),
+                .pixel_y(y),
+                .sprite_write_xy(sprite_target_write_xy[i]),
+                .sprite_write_dxy(sprite_target_write_dxy[i]),
+                .sprite_write_x(sprite_target_write_x[i]),
+                .sprite_write_y(sprite_target_write_y[i]),
+                .sprite_write_dx(sprite_target_write_dx[i]),
+                .sprite_write_dy(sprite_target_write_dy[i]),
+                .sprite_enable_update(sprite_target_enable_update[i]),
+                .sprite_x(sprite_target_x[i]),
+                .sprite_y(sprite_target_y[i]),
+                .sprite_within_screen(sprite_target_within_screen[i]),
+                .sprite_out_left(sprite_target_out_left[i]),
+                .sprite_out_right(sprite_target_out_right[i]),
+                .sprite_out_top(sprite_target_out_top[i]),
+                .sprite_out_bottom(sprite_target_out_bottom[i]),
+                .rgb_en(sprite_target_rgb_en[i]),
+                .rgb(sprite_target_rgb[i]),
+                .hit_wall(target_hit_wall[i])
+            );
+        end
+    endgenerate
 
     //------------------------------------------------------------------------
 
@@ -211,7 +207,6 @@ module game_top
     wire  [w_x             - 1:0] sprite_torpedo_write_x;
     wire  [w_y             - 1:0] sprite_torpedo_write_y;
 
-    // logic [                  2:0] torpedo_speed;
     logic [                  2:0] sprite_torpedo_write_dx;
     logic [                  2:0] sprite_torpedo_write_dy;
 
@@ -317,30 +312,32 @@ module game_top
     //------------------------------------------------------------------------
 
     wire collision;
+    wire [`N_TARGETS-1:0] target_collisions;
 
-    game_overlap
-    #(
-        .screen_width  ( screen_width  ),
-        .screen_height ( screen_height )
-    )
-    overlap
-    (
-        .clk       ( clk                        ),
-        .rst       ( rst                        ),
-        .target_enable ( target_enable ),
+    generate
+        genvar j;
+        for (j = 0; j < `N_TARGETS; j++) begin : overlap_gen
+            game_overlap #(
+                .screen_width(screen_width),
+                .screen_height(screen_height)
+            ) overlap_inst (
+                .clk(clk),
+                .rst(rst),
+                .target_enable(target_enable[j]),
+                .left_1(sprite_target_out_left[j]),
+                .right_1(sprite_target_out_right[j]),
+                .top_1(sprite_target_out_top[j]),
+                .bottom_1(sprite_target_out_bottom[j]),
+                .left_2(sprite_torpedo_out_left),
+                .right_2(sprite_torpedo_out_right),
+                .top_2(sprite_torpedo_out_top),
+                .bottom_2(sprite_torpedo_out_bottom),
+                .overlap(target_collisions[j])
+            );
+        end
+    endgenerate
 
-        .left_1    ( sprite_target_out_left     ),
-        .right_1   ( sprite_target_out_right    ),
-        .top_1     ( sprite_target_out_top      ),
-        .bottom_1  ( sprite_target_out_bottom   ),
-
-        .left_2    ( sprite_torpedo_out_left    ),
-        .right_2   ( sprite_torpedo_out_right   ),
-        .top_2     ( sprite_torpedo_out_top     ),
-        .bottom_2  ( sprite_torpedo_out_bottom  ),
-
-        .overlap   ( collision                  )
-    );
+    assign collision = |target_collisions;
 
     //------------------------------------------------------------------------
 
