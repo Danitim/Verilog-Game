@@ -38,19 +38,34 @@ module game_top
 
     logic [`N_TARGETS-1:0] prev_target_hit_wall;
 
+    logic [3:0] hit_total = 0;
+    logic [$clog2(`N_TARGETS+1)-1:0] active_targets = 1;
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             target_counter <= 0;
             prev_target_hit_wall <= 0;
+            hit_total <= 0;
+            active_targets <= 1;
         end else begin
             prev_target_hit_wall <= target_hit_wall;
 
             if (collision) begin
                 target_counter <= 0;
+                hit_total <= 0;
+                active_targets <= 1;
             end else begin
                 for (int i = 0; i < `N_TARGETS; i++) begin
                     if (!prev_target_hit_wall[i] && target_hit_wall[i]) begin
                         target_counter <= target_counter + 1;
+                        hit_total <= hit_total + 1;
+
+                        if (hit_total >= 4) begin
+                            if (active_targets < `N_TARGETS) begin
+                                active_targets <= active_targets + 1;
+                            end
+                            hit_total <= 0;
+                        end
                     end
                 end
             end
@@ -151,7 +166,16 @@ module game_top
 
     //------------------------------------------------------------------------
 
-    logic [`N_TARGETS-1:0] target_enable = '1;
+    logic [`N_TARGETS-1:0] target_enable;
+    always_comb begin
+        target_enable = '0;
+        for (int i = 0; i < `N_TARGETS; i++) begin
+            if (i < active_targets) begin
+                target_enable[i] = 1'b1;
+            end
+        end
+    end
+
     wire [`N_TARGETS-1:0] target_collide_x;
     wire [`N_TARGETS-1:0] target_collide_y;
 
@@ -162,6 +186,7 @@ module game_top
     ) target_collisions_inst (
         .clk(clk),
         .rst(rst),
+        .enable_targets(target_enable),
         .sprite_left(sprite_target_out_left),
         .sprite_right(sprite_target_out_right),
         .sprite_top(sprite_target_out_top),

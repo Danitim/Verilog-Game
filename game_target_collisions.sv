@@ -8,7 +8,7 @@ module game_target_collisions #(
 ) (
     input                          clk,
     input                          rst,
-    input                          random,
+    input [N_TARGETS-1:0]         enable_targets,
     input [N_TARGETS-1:0][w_x-1:0] sprite_left,
     input [N_TARGETS-1:0][w_x-1:0] sprite_right,
     input [N_TARGETS-1:0][w_y-1:0] sprite_top,
@@ -67,17 +67,19 @@ always_comb begin
 
     for (int i = 0; i < N_TARGETS; i++) begin
         for (int j = i+1; j < N_TARGETS; j++) begin
-            x_olap = (sprite_left[i] < sprite_right[j]) && 
+            if (enable_targets[i] && enable_targets[j]) begin
+                x_olap = (sprite_left[i] < sprite_right[j]) && 
                           (sprite_right[i] > sprite_left[j]);
-            y_olap = (sprite_top[i] < sprite_bottom[j]) && 
+                y_olap = (sprite_top[i] < sprite_bottom[j]) && 
                           (sprite_bottom[i] > sprite_top[j]);
 
-            if (!immunity_matrix[i][j].active && x_olap && y_olap) begin
-                collide_x[i] = 1'b1;
-                collide_x[j] = 1'b1;
-                collide_y[i] = 1'b1;
-                collide_y[j] = 1'b1;
-                activate_immunity[i][j] = 1'b1;
+                if (!immunity_matrix[i][j].active && x_olap && y_olap) begin
+                    collide_x[i] = 1'b1;
+                    collide_x[j] = 1'b1;
+                    collide_y[i] = 1'b1;
+                    collide_y[j] = 1'b1;
+                    activate_immunity[i][j] = 1'b1;
+                end
             end
         end
     end
