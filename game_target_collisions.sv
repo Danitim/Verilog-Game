@@ -4,7 +4,7 @@ module game_target_collisions #(
     parameter N_TARGETS         = `N_TARGETS,
               w_x               = $clog2(640),
               w_y               = $clog2(480),
-              IMMUNITY_DURATION = 5  // Настраиваемая длительность иммунитета
+              IMMUNITY_DURATION = 5
 ) (
     input                          clk,
     input                          rst,
@@ -17,9 +17,6 @@ module game_target_collisions #(
     output logic [N_TARGETS-1:0]   collide_y
 );
 
-//----------------------------------------------------------
-// Структура для хранения состояния иммунитета
-//----------------------------------------------------------
 typedef struct packed {
     logic [IMMUNITY_DURATION-1:0] counter;
     logic                         active;
@@ -27,14 +24,10 @@ typedef struct packed {
 
 immunity_t immunity_matrix [N_TARGETS-1:0][N_TARGETS-1:0];
 
-//----------------------------------------------------------
-// Временные сигналы для активации иммунитета
-//----------------------------------------------------------
+
 logic [N_TARGETS-1:0][N_TARGETS-1:0] activate_immunity;
 
-//----------------------------------------------------------
-// Обновление иммунитета (единственный драйвер)
-//----------------------------------------------------------
+
 always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
         for (int i = 0; i < N_TARGETS; i++) begin
@@ -46,14 +39,12 @@ always_ff @(posedge clk or posedge rst) begin
     end else begin
         for (int i = 0; i < N_TARGETS; i++) begin
             for (int j = i+1; j < N_TARGETS; j++) begin
-                // Автоматическое уменьшение счетчика
                 if (immunity_matrix[i][j].active) begin
                     immunity_matrix[i][j].counter <= immunity_matrix[i][j].counter - 1;
                     if (immunity_matrix[i][j].counter == 0) begin
                         immunity_matrix[i][j].active <= 1'b0;
                     end
                 end
-                // Активация по внешнему сигналу
                 if (activate_immunity[i][j]) begin
                     immunity_matrix[i][j].counter <= IMMUNITY_DURATION;
                     immunity_matrix[i][j].active  <= 1'b1;
@@ -63,9 +54,7 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
-//----------------------------------------------------------
-// Логика обнаружения коллизий
-//----------------------------------------------------------
+
 
 logic x_olap;
 logic y_olap;
