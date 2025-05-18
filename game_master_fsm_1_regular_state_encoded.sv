@@ -7,6 +7,8 @@ module game_master_fsm_1_regular_state_encoded
 
     input                          launch_key,
 
+    input        [`N_TARGETS-1:0]  new_target_activation,
+
     output logic [`N_TARGETS-1:0]  sprite_target_write_xy,
     output logic                   sprite_torpedo_write_xy,
 
@@ -85,6 +87,13 @@ module game_master_fsm_1_regular_state_encoded
             STATE_AIM: begin
                 d_sprite_target_enable_update = {`N_TARGETS{1'b1}};
 
+                for (int i = 0; i < `N_TARGETS; i++) begin
+                    if (new_target_activation[i]) begin
+                        d_sprite_target_write_xy[i]  = 1'b1;
+                        d_sprite_target_write_dxy[i] = 1'b1;
+                    end
+                end
+
                 // Перезапуск целей вне экрана
                 for (int i = 0; i < `N_TARGETS; i++) begin
                     if (target_out_of_screen[i]) begin
@@ -107,6 +116,13 @@ module game_master_fsm_1_regular_state_encoded
                 d_sprite_torpedo_write_dxy     = 1'b1;
                 d_sprite_target_enable_update  = {`N_TARGETS{1'b1}};
                 d_sprite_torpedo_enable_update = 1'b1;
+
+                for (int i = 0; i < `N_TARGETS; i++) begin
+                    if (new_target_activation[i]) begin
+                        d_sprite_target_write_xy[i]  = 1'b1;
+                        d_sprite_target_write_dxy[i] = 1'b1;
+                    end
+                end
 
                 // Перезапуск целей вне экрана
                 for (int i = 0; i < `N_TARGETS; i++) begin

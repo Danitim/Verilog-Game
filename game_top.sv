@@ -60,7 +60,7 @@ module game_top
                         target_counter <= target_counter + 1;
                         hit_total <= hit_total + 1;
 
-                        if (hit_total >= 4) begin
+                        if (hit_total >= 5) begin
                             if (active_targets < `N_TARGETS) begin
                                 active_targets <= active_targets + 1;
                             end
@@ -111,18 +111,17 @@ module game_top
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            speed <= 4'b0001;
+            speed <= 4'b0010;
             hit_counter <= 0;
         end
         else if (collision) begin
-            speed <= 4'b0001;
+            speed <= 4'b0010;
             hit_counter <= 0;
         end
         else begin
             for (int i = 0; i < `N_TARGETS; i++) begin
                 if (!prev_target_hit_wall[i] && target_hit_wall[i]) begin
                     if (hit_counter == 4) begin
-                        speed <= (speed < 4'b1111) ? speed + 1 : speed;
                         hit_counter <= 0;
                     end
                     else begin
@@ -137,30 +136,31 @@ module game_top
         for (int i = 0; i < `N_TARGETS; i++) begin
             logic [15:0] rand_part;
             rand_part = random ^ (i * 16'h5555);
-            
-            case (rand_part[1:0])
-                2'b00: begin
-                    sprite_target_write_x[i] = 10'd0 + rand_part[3:0] * 8;
-                    sprite_target_write_dx[i] = speed;
-                    sprite_target_write_dy[i] = speed;
-                end
-                2'b01: begin
-                    sprite_target_write_x[i] = screen_width - 16 - rand_part[7:4] * 8;
-                    sprite_target_write_dx[i] = -speed;
-                    sprite_target_write_dy[i] = speed;
-                end
-                2'b10: begin
-                    sprite_target_write_x[i] = rand_part[11:8] % (screen_width - 8);
-                    sprite_target_write_dx[i] = speed;
-                    sprite_target_write_dy[i] = -speed;
-                end
-                2'b11: begin
-                    sprite_target_write_x[i] = rand_part[15:12] % (screen_width - 8);
-                    sprite_target_write_dx[i] = -speed;
-                    sprite_target_write_dy[i] = speed;
-                end
-            endcase
-            sprite_target_write_y[i] = screen_height/10 + rand_part[5:0];
+            if (new_target_activation[i]) begin 
+                case (rand_part[1:0])
+                    2'b00: begin
+                        sprite_target_write_x[i] = 10'd0 + rand_part[3:0] * 8;
+                        sprite_target_write_dx[i] = speed;
+                        sprite_target_write_dy[i] = speed;
+                    end
+                    2'b01: begin
+                        sprite_target_write_x[i] = screen_width - 16 - rand_part[7:4] * 8;
+                        sprite_target_write_dx[i] = -speed;
+                        sprite_target_write_dy[i] = speed;
+                    end
+                    2'b10: begin
+                        sprite_target_write_x[i] = rand_part[11:8] % (screen_width - 8);
+                        sprite_target_write_dx[i] = speed;
+                        sprite_target_write_dy[i] = -speed;
+                    end
+                    2'b11: begin
+                        sprite_target_write_x[i] = rand_part[15:12] % (screen_width - 8);
+                        sprite_target_write_dx[i] = -speed;
+                        sprite_target_write_dy[i] = speed;
+                    end
+                endcase
+                sprite_target_write_y[i] = screen_height/10 + rand_part[5:0];
+            end
         end
     end
 
@@ -174,6 +174,22 @@ module game_top
                 target_enable[i] = 1'b1;
             end
         end
+    end
+
+    logic [$clog2(`N_TARGETS+1)-1:0] prev_active_targets;
+    logic [`N_TARGETS-1:0] new_target_activation;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) prev_active_targets <= 1;
+        else prev_active_targets <= active_targets;
+    end
+
+    // Формируем сигнал активации для новых целей
+    always_comb begin
+        new_target_activation = '0;
+        for (int i = 0; i < `N_TARGETS; i++)
+            if ((active_targets > prev_active_targets) && (i >= prev_active_targets))
+                new_target_activation[i] = 1'b1;
     end
 
     wire [`N_TARGETS-1:0] target_collide_x;
@@ -427,6 +443,8 @@ module game_top
         .rst                           ( rst                           ),
 
         .launch_key                    ( launch_key                    ),
+
+        .new_target_activation         ( new_target_activation         ),
 
         .sprite_target_write_xy        ( sprite_target_write_xy        ),
         .sprite_torpedo_write_xy       ( sprite_torpedo_write_xy       ),
