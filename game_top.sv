@@ -60,7 +60,7 @@ module game_top
                         target_counter <= target_counter + 1;
                         hit_total <= hit_total + 1;
 
-                        if (hit_total >= 5) begin
+                        if (hit_total >= 3) begin
                             if (active_targets < `N_TARGETS) begin
                                 active_targets <= active_targets + 1;
                             end
@@ -184,7 +184,6 @@ module game_top
         else prev_active_targets <= active_targets;
     end
 
-    // Формируем сигнал активации для новых целей
     always_comb begin
         new_target_activation = '0;
         for (int i = 0; i < `N_TARGETS; i++)

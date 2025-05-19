@@ -4,7 +4,7 @@ module game_target_collisions #(
     parameter N_TARGETS         = `N_TARGETS,
               w_x               = $clog2(640),
               w_y               = $clog2(480),
-              IMMUNITY_DURATION = 5
+              IMMUNITY_DURATION = 3
 ) (
     input                          clk,
     input                          rst,
